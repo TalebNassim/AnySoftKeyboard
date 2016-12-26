@@ -1579,12 +1579,14 @@ public class AnyKeyboardViewBase extends View implements
         return mThisWindowOffset;
     }
 
+    @NonNull
     protected PointerTracker getPointerTracker(@NonNull final MotionEvent motionEvent) {
         final int index = MotionEventCompat.getActionIndex(motionEvent);
         final int id = motionEvent.getPointerId(index);
         return getPointerTracker(id);
     }
 
+    @NonNull
     protected PointerTracker getPointerTracker(final int id) {
         final Key[] keys = mKeys;
         final OnKeyboardActionListener listener = mKeyboardActionListener;
