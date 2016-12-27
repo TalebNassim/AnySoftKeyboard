@@ -143,7 +143,7 @@ public class IMEUtil {
         }
     }
 
-    public static void tripSuggestions(List<CharSequence> suggestions, final int maxSuggestions, List<CharSequence> stringsPool) {
+    public static void trimSuggestions(List<CharSequence> suggestions, final int maxSuggestions, List<CharSequence> stringsPool) {
         while (suggestions.size() > maxSuggestions) {
             removeSuggestion(suggestions, maxSuggestions, stringsPool);
         }
