@@ -800,6 +800,9 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
     public void setSuggestions(@NonNull List<? extends CharSequence> suggestions,
                                 boolean completions, boolean typedWordValid,
                                 boolean haveMinimalSuggestion) {
+        //no need for any other suggestions
+        mKeyboardHandler.removeMessages(KeyboardUIStateHandler.MSG_UPDATE_SUGGESTIONS);
+
         if (mCandidateView != null) {
             Logger.d(TAG, "Have %d suggestions.", suggestions.size());
             for (CharSequence suggestion : suggestions) Logger.d(TAG, "suggestion: %s", suggestion);
@@ -1178,7 +1181,7 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
         updateShiftStateNow();
     }
 
-    private void onFunctionKey(final int primaryCode, final Key key, final int multiTapIndex, final int[] nearByKeyCodes, final boolean fromUI) {
+    private void onFunctionKey(final int primaryCode, final Key key, final boolean fromUI) {
         if (BuildConfig.DEBUG) Logger.d(TAG, "onFunctionKey %d", primaryCode);
 
         final InputConnection ic = getCurrentInputConnection();
@@ -1386,7 +1389,7 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
         }
     }
 
-    private void onNonFunctionKey(final int primaryCode, final Key key, final int multiTapIndex, final int[] nearByKeyCodes, final boolean fromUI) {
+    private void onNonFunctionKey(final int primaryCode, final int[] nearByKeyCodes) {
         if (BuildConfig.DEBUG) Logger.d(TAG, "onFunctionKey %d", primaryCode);
 
         final InputConnection ic = getCurrentInputConnection();
@@ -1425,7 +1428,7 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
                             ic.commitText(Character.toString((char) controlCode), 1);
                         }
                     } else {
-                        handleCharacter(primaryCode, key, multiTapIndex, nearByKeyCodes);
+                        handleCharacter(primaryCode, nearByKeyCodes);
                     }
                     mJustAddedAutoSpace = false;
                 }
@@ -1436,9 +1439,9 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
     @Override
     public void onKey(int primaryCode, Key key, int multiTapIndex, int[] nearByKeyCodes, boolean fromUI) {
         if (primaryCode > 0)
-            onNonFunctionKey(primaryCode, key, multiTapIndex, nearByKeyCodes, fromUI);
+            onNonFunctionKey(primaryCode, nearByKeyCodes);
         else
-            onFunctionKey(primaryCode, key, multiTapIndex, nearByKeyCodes, fromUI);
+            onFunctionKey(primaryCode, key, fromUI);
 
         setSpaceTimeStamp(primaryCode == KeyCodes.SPACE);
     }
@@ -1682,18 +1685,6 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
 
                 postUpdateSuggestions();
             } else {
-                /*if (TextEntryState.isTagsState()) {
-                    //so, the user hit backspace, and now (or even before that) the typed word is empty.
-                    //this could be because the user deleted the entire tag they were searching
-                    //or they also deleted the colon.
-                    //so, if the character before the the current cursor position is not a colon,
-                    //we'll abort correction
-                    final CharSequence beforeText = ic.getTextBeforeCursor(1, 0);
-                    if (!TextUtils.isEmpty(beforeText) && AnySoftKeyboardKeyboardTagsSearcher.START_TAGS_SEARCH_CHARACTER == beforeText.charAt(0)) {
-                        Logger.d(TAG, "User deleted tag-searcher colon. Aborting correction.");
-                        abortCorrection(true, false);
-                    }
-                }*/
                 ic.deleteSurroundingText(1, 0);
             }
         } else {
@@ -1769,7 +1760,7 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping i
         }
     }
 
-    private void handleCharacter(final int primaryCode, final Key key, final int multiTapIndex, int[] nearByKeyCodes) {
+    private void handleCharacter(final int primaryCode, int[] nearByKeyCodes) {
         if (BuildConfig.DEBUG)
             Logger.d(TAG, "handleCharacter: %d, isPredictionOn: %s, mPredicting: %s", primaryCode, isPredictionOn(), mPredicting);
 
